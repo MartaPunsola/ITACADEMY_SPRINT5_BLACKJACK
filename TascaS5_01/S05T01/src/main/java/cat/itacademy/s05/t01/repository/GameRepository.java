@@ -7,7 +7,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface GameRepository extends ReactiveMongoRepository<Game, String> {
 
-    //https://www.baeldung.com/spring-data-mongodb-reactive
-
-
 }

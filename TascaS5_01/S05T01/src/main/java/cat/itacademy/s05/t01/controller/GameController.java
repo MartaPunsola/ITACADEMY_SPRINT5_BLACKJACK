@@ -3,6 +3,8 @@ package cat.itacademy.s05.t01.controller;
 import cat.itacademy.s05.t01.model.dto.ActionDTO;
 import cat.itacademy.s05.t01.service.impl.GameServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -63,7 +65,9 @@ public class GameController {
             description = "It makes a move and concludes the game",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "A player's move and bet",
-                    required = true
+                    required = true,
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ActionDTO.class))
             )
     )
     @ApiResponses(value = {

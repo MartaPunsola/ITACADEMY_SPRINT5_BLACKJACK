@@ -3,6 +3,8 @@ package cat.itacademy.s05.t01.controller;
 import cat.itacademy.s05.t01.model.player.Player;
 import cat.itacademy.s05.t01.service.impl.PlayerServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +29,9 @@ public class PlayerController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Operation successful"),
-            @ApiResponse(responseCode = "400", description = "There are no registered players")
+            @ApiResponse(responseCode = "400", description = "There are no registered players",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Player.class))) //????
     })
     @GetMapping("/ranking")
     public Mono<ResponseEntity<List<Player>>> sortPlayers() {

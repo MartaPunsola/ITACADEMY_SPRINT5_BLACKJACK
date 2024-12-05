@@ -1,12 +1,10 @@
 package cat.itacademy.s05.t01.service.impl;
 
 import cat.itacademy.s05.t01.exception.custom.GameNotFoundException;
-import cat.itacademy.s05.t01.management.GameManager;
+import cat.itacademy.s05.t01.service.GameLogicService;
 import cat.itacademy.s05.t01.model.Game;
 import cat.itacademy.s05.t01.model.dto.GameDTO;
-import cat.itacademy.s05.t01.model.dto.PlayerDTO;
 import cat.itacademy.s05.t01.model.enums.Move;
-import cat.itacademy.s05.t01.model.enums.PlayerStatus;
 import cat.itacademy.s05.t01.model.player.PlayerPlaying;
 import cat.itacademy.s05.t01.repository.GameRepository;
 import cat.itacademy.s05.t01.service.GameService;
@@ -22,12 +20,12 @@ public class GameServiceImpl implements GameService {
     @Autowired
     private PlayerServiceImpl playerService;
     @Autowired
-    private GameManager gameManager;
+    private GameLogicService gameLogicService;
 
 
     @Override
     public Mono<GameDTO> newGame(String playerName) {
-        return gameManager.initiateGame()
+        return gameLogicService.initiateGame()
                 .flatMap(game -> addPlayer(game, playerName))
                 .flatMap(gameRepository::save)
                 .map(savedGame -> new GameDTO(savedGame.getId(), savedGame.getPlayer().getUsername()));
@@ -55,9 +53,9 @@ public class GameServiceImpl implements GameService {
     public Mono<Void> play(String id, Move move, int bet) {
         return gameRepository.findById(id)
                 .switchIfEmpty(Mono.error(new GameNotFoundException("Game with id " + id + " not found.")))
-                .flatMap(game -> gameManager.play(game, move, bet)) // Encadena play
-                .flatMap(game -> gameManager.croupierMakesMove(game)) // Encadena croupierMakesMove
-                .flatMap(game -> gameManager.determineFinalStatus(game)) // Encadena determineFinalStatus
+                .flatMap(game -> gameLogicService.play(game, move, bet)) // Encadena play
+                .flatMap(game -> gameLogicService.croupierMakesMove(game)) // Encadena croupierMakesMove
+                .flatMap(game -> gameLogicService.determineFinalStatus(game)) // Encadena determineFinalStatus
                 .flatMap(gameRepository::save) // Guarda el joc actualitzat
                 .flatMap(game -> playerService.addPlayedGame(game.getPlayer().getId())) // Registra la partida jugada
                 .then(); // Retorna Mono<Void> quan tot s'ha completat

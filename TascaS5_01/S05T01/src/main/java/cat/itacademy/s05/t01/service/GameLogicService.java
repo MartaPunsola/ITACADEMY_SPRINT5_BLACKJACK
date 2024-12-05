@@ -1,4 +1,4 @@
-package cat.itacademy.s05.t01.management;
+package cat.itacademy.s05.t01.service;
 
 import cat.itacademy.s05.t01.exception.custom.InvalidMoveException;
 import cat.itacademy.s05.t01.model.Game;
@@ -18,15 +18,10 @@ import reactor.core.publisher.Mono;
 import java.util.*;
 
 @Service
-public class GameManager {
+public class GameLogicService {
 
     @Autowired
     private PlayerServiceImpl playerService;
-
-    /*public GameManager() {
-        //this.deck = this.newDeck();
-
-    }*/
 
     public Mono<Game> initiateGame() {
         return Mono.just(new Game())
