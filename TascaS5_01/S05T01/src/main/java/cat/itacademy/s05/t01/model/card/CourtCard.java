@@ -2,7 +2,6 @@ package cat.itacademy.s05.t01.model.card;
 
 import cat.itacademy.s05.t01.model.enums.Figure;
 import cat.itacademy.s05.t01.model.enums.Suit;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 

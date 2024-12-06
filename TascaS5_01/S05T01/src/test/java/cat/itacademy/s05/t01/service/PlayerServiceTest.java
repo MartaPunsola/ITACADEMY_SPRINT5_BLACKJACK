@@ -123,10 +123,12 @@ public class PlayerServiceTest {
     public void getPlayersRankingTest_shouldReturnSortedPlayers() {
         Player player1 = new Player("Dandi");
         player1.setId(1L);
+        player1.setGamesPlayed(15);
         player1.setGamesWon(10);
 
         Player player2 = new Player("Mimi");
         player2.setId(2L);
+        player2.setGamesPlayed(12);
         player2.setGamesWon(5);
 
         List<Player> sortedPlayers = List.of(player1, player2);
@@ -134,17 +136,28 @@ public class PlayerServiceTest {
         when(playerRepository.findAllSortedByGamesWon())
                 .thenReturn(Flux.fromIterable(sortedPlayers));
 
-        Mono<List<Player>> result = playerServiceMock.getPlayersRanking();
-        
+        Mono<List<PlayerDTO>> result = playerServiceMock.getPlayersRanking();
+
         StepVerifier.create(result)
-                .expectNextMatches(players -> {
-                    assertEquals(2, players.size());
-                    assertEquals("Dandi", players.get(0).getUsername());
-                    assertEquals("Mimi", players.get(1).getUsername());
+                .expectNextMatches(playerDTOs -> {
+                    assertEquals(2, playerDTOs.size());
+
+                    PlayerDTO dto1 = playerDTOs.get(0);
+                    assertEquals(1L, dto1.getId());
+                    assertEquals("Dandi", dto1.getUsername());
+                    assertEquals(15, dto1.getGamesPlayed());
+                    assertEquals(10, dto1.getGamesWon());
+
+                    PlayerDTO dto2 = playerDTOs.get(1);
+                    assertEquals(2L, dto2.getId());
+                    assertEquals("Mimi", dto2.getUsername());
+                    assertEquals(12, dto2.getGamesPlayed());
+                    assertEquals(5, dto2.getGamesWon());
+
                     return true;
                 })
                 .verifyComplete();
-        
+
         verify(playerRepository).findAllSortedByGamesWon();
     }
 
@@ -154,7 +167,7 @@ public class PlayerServiceTest {
         when(playerRepository.findAllSortedByGamesWon())
                 .thenReturn(Flux.empty());
 
-        Mono<List<Player>> result = playerServiceMock.getPlayersRanking();
+        Mono<List<PlayerDTO>> result = playerServiceMock.getPlayersRanking();
         
         StepVerifier.create(result)
                 .expectErrorMatches(throwable -> throwable instanceof NoPlayersException &&

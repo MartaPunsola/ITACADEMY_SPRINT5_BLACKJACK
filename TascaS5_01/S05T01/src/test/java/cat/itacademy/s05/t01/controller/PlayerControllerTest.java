@@ -1,6 +1,6 @@
 package cat.itacademy.s05.t01.controller;
 
-import cat.itacademy.s05.t01.model.player.Player;
+import cat.itacademy.s05.t01.model.dto.PlayerDTO;
 import cat.itacademy.s05.t01.service.impl.PlayerServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,11 +29,11 @@ public class PlayerControllerTest {
     @DisplayName("Testing the PlayerController method to rank players.")
     @Test
     void sortPlayersTest() {
-        List<Player> playersRanking = List.of(new Player("Pepe"), new Player("Pepita"));
+        List<PlayerDTO> playersRanking = List.of(new PlayerDTO(1L, "Pepe"), new PlayerDTO(2L, "Pepita"));
 
         when(mockPlayerService.getPlayersRanking()).thenReturn(Mono.just(playersRanking));
 
-        ResponseEntity<List<Player>> expectedResponse = ResponseEntity.ok(playersRanking);
+        ResponseEntity<List<PlayerDTO>> expectedResponse = ResponseEntity.ok(playersRanking);
 
         StepVerifier.create(playerController.sortPlayers())
                 .expectNext(expectedResponse)

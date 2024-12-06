@@ -34,6 +34,4 @@ public class GlobalExceptionHandler {
         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error));
     }
 
-    //gestionar possibles errors generals
-
 }

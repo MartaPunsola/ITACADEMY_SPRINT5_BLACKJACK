@@ -31,7 +31,6 @@ public class GameLogicService {
                 });
     }
 
-
     private List<Card> newDeck() {
         List<Card> cards = new ArrayList<>();
         Arrays.stream(Suit.values())
@@ -48,7 +47,6 @@ public class GameLogicService {
     }
 
     private Mono<Game> dealInitialCards(Game game) {
-        Card card;
         List<Card> deck = game.getDeck();
         PlayerPlaying player = game.getPlayer();
         Croupier croupier = game.getCroupier();
@@ -79,16 +77,45 @@ public class GameLogicService {
         return deck.remove(randomIndex);
     }
 
-    public int calculateHandValue(Participant participant) {
+    private int calculateHandValue(Participant participant) {
         return participant.getHand().stream().mapToInt(Card::getValue).sum();
     }
 
-    public Mono<Game> playerBets(Game game, int initialBet) {
+    private void setAceValue(List<Card> cards, int handValue) {
+        int aceValue;
+        for(Card card : cards) {
+            if(card instanceof Ace) {
+                aceValue = 1;
+                if (handValue + 11 <= 21) {
+                    aceValue = 11;
+                }
+                card.setValue(aceValue);
+            }
+        }
+    }
+
+    public Mono<Game> play(Game game, Move move, int bet) {
+        PlayerPlaying player = game.getPlayer();
+        playerBets(game, bet);
+        dealInitialCards(game);
+        if(player.getHandValue() == 21) {
+            blackJackResult(game);
+        }
+        playerMakesMove(game, move);
+        return Mono.just(game);
+    }
+
+    private Mono<Game> playerBets(Game game, int initialBet) {
         PlayerPlaying player = game.getPlayer();
         if(initialBet < 5 || initialBet > 150) {
             return Mono.error(new InvalidMoveException("Minimum bet: 5\nMaximum bet: 150"));
         }
         player.setInitialBet(initialBet);
+        return Mono.just(game);
+    }
+
+    private Mono<Game> blackJackResult(Game game) {
+        game.getPlayer().setStatus(PlayerStatus.BLACKJACK);
         return Mono.just(game);
     }
 
@@ -105,8 +132,6 @@ public class GameLogicService {
                 break;
         }
         return Mono.just(game);
-        //millorar aquest switch!!!!
-
     }
 
     public Mono<Game> croupierMakesMove(Game game) {
@@ -119,10 +144,9 @@ public class GameLogicService {
             croupier.setHandValue(calculateHandValue(croupier));
         }
         return Mono.just(game);
-
     }
 
-    public Mono<Game> playerHits(Game game) {
+    private Mono<Game> playerHits(Game game) {
         PlayerPlaying player = game.getPlayer();
         List<Card> deck = game.getDeck();
 
@@ -139,45 +163,13 @@ public class GameLogicService {
         return Mono.just(game);
     }
 
-    public Mono<Game> playerStands(Game game) {
+    private Mono<Game> playerStands(Game game) {
         game.getPlayer().setStatus(PlayerStatus.STAND);
         return Mono.just(game);
     }
 
-    public Mono<Game> playerWins(Game game) {
-        PlayerPlaying player = game.getPlayer();
-        player.setStatus(PlayerStatus.WIN);
-        player.setGamesWon(player.getGamesWon() + 1);
-        game.setPlayerWins(true);
-
-        // Primer, afegim la quantitat guanyada al saldo del jugador
-        //Mono<Void> updateBalance = playerService.addToBalance(player.getId(), player.getInitialBet())
-               // .then();
-
-        // Després, afegim la victòria a les estadístiques del jugador
-        //Mono<Void> updateWonGames = playerService.addWonGame(player.getId())
-               // .then();
-
-        // Encadenem les operacions en un flux reactiu
-        /*return Mono.when(updateBalance, updateWonGames)
-                .then(Mono.just(game)); //provar l'altra opció*/
-
-        return playerService.addToBalance(player.getId(), player.getInitialBet()) // Incrementa el balance
-            .then(playerService.addWonGame(player.getId())) // Afegeix la partida guanyada
-            .thenReturn(game); // Retorna el joc després de completar tots els efectes
-    }
-
-    public Mono<Game> playerLoses(Game game) {
-        PlayerPlaying player = game.getPlayer();
-        player.setStatus(PlayerStatus.LOSE);
-        game.setPlayerWins(false);
-        return playerService.subtractFromBalance(player.getId(), player.getInitialBet()) //no funciona
-                .then(Mono.just(game));
-    }
-
     public Mono<Game> determineFinalStatus(Game game) {
         PlayerPlaying player = game.getPlayer();
-        Croupier croupier = game.getCroupier();
         int playerHand = game.getPlayer().getHandValue();
         int croupierHand = game.getCroupier().getHandValue();
 
@@ -203,58 +195,23 @@ public class GameLogicService {
         });
     }
 
-    private void setAceValue(List<Card> cards, int handValue) {
-        int aceValue;
-        for(Card card : cards) {
-            if(card instanceof Ace) {
-                aceValue = 1;
-                if (handValue + 11 <= 21) {
-                    aceValue = 11;
-                }
-                card.setValue(aceValue);
-            }
-        }
-    //revisar mètode!! no està funcionant
-
-        /*int aceCount = 0;
-
-    // Comptem quantes Aces tenim a la mà
-    for (Card card : cards) {
-        if (card instanceof Ace) {
-            aceCount++;
-        }
-    }
-
-    // Assegurem-nos que el valor de la mà no superi mai 21
-    for (Card card : cards) {
-        if (card instanceof Ace) {
-            int aceValue = 1; // Inicialitzem a 1 per defecte
-            if (handValue + 11 <= 21) {
-                // Si afegir una Ace com 11 no supera 21, assignem 11
-                aceValue = 11;
-            }
-            card.setValue(aceValue);
-            handValue += aceValue; // Actualitzem el valor de la mà???
-            aceCount--; // Reduïm el nombre d'Aces pendents per assignar el valor 11
-        }
-    }*/
-
-    }
-
-    private Mono<Game> blackJackResult(Game game) {
-        game.getPlayer().setStatus(PlayerStatus.BLACKJACK);
-        return Mono.just(game);
-    }
-
-    public Mono<Game> play(Game game, Move move, int bet) {
+    private Mono<Game> playerWins(Game game) {
         PlayerPlaying player = game.getPlayer();
-        playerBets(game, bet);
-        dealInitialCards(game);
-        if(player.getHandValue() == 21) {
-            blackJackResult(game);
-        }
-        playerMakesMove(game, move);
-        return Mono.just(game);
+        player.setStatus(PlayerStatus.WIN);
+        player.setGamesWon(player.getGamesWon() + 1);
+        game.setPlayerWins(true);
+
+        return playerService.addToBalance(player.getId(), player.getInitialBet())
+                .then(playerService.addWonGame(player.getId()))
+                .thenReturn(game);
+    }
+
+    private Mono<Game> playerLoses(Game game) {
+        PlayerPlaying player = game.getPlayer();
+        player.setStatus(PlayerStatus.LOSE);
+        game.setPlayerWins(false);
+        return playerService.subtractFromBalance(player.getId(), player.getInitialBet())
+                .then(Mono.just(game));
     }
 
 }

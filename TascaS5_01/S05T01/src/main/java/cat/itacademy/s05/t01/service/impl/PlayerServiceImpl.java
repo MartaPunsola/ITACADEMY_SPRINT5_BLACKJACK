@@ -38,9 +38,10 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public Mono<List<Player>> getPlayersRanking() {
+    public Mono<List<PlayerDTO>> getPlayersRanking() {
         return playerRepository.findAllSortedByGamesWon()
                 .switchIfEmpty(Mono.error(new NoPlayersException("There are no players registered.")))
+                .map(player -> new PlayerDTO(player.getId(), player.getUsername(), player.getGamesPlayed(), player.getGamesWon()))
                 .collectList();
     }
 

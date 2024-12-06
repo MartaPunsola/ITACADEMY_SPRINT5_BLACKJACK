@@ -50,18 +50,16 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public Mono<Void> play(String id, Move move, int bet) {
+    public Mono<GameDTO> play(String id, Move move, int bet) {
         return gameRepository.findById(id)
                 .switchIfEmpty(Mono.error(new GameNotFoundException("Game with id " + id + " not found.")))
-                .flatMap(game -> gameLogicService.play(game, move, bet)) // Encadena play
-                .flatMap(game -> gameLogicService.croupierMakesMove(game)) // Encadena croupierMakesMove
-                .flatMap(game -> gameLogicService.determineFinalStatus(game)) // Encadena determineFinalStatus
-                .flatMap(gameRepository::save) // Guarda el joc actualitzat
-                .flatMap(game -> playerService.addPlayedGame(game.getPlayer().getId())) // Registra la partida jugada
-                .then(); // Retorna Mono<Void> quan tot s'ha completat
-        //veure si pot retornar un DTO!!
-
-
+                .flatMap(game -> gameLogicService.play(game, move, bet))
+                .flatMap(game -> gameLogicService.croupierMakesMove(game))
+                .flatMap(game -> gameLogicService.determineFinalStatus(game))
+                .flatMap(gameRepository::save)
+                .flatMap(game -> playerService.addPlayedGame(game.getPlayer().getId())
+                        .thenReturn(game))
+                .map(updatedGame -> new GameDTO(updatedGame.getId(), updatedGame.getPlayer().getUsername(), updatedGame.getStatus(), updatedGame.getPlayer().getStatus()));
     }
 
     @Override

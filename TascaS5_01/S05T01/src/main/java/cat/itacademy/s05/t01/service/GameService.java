@@ -10,6 +10,6 @@ public interface GameService {
     Mono<GameDTO> newGame(String playerName);
     Mono<Game> addPlayer(Game game, String playerName);
     Mono<GameDTO> getGamebyId(String id);
-    Mono<Void> play(String id, Move move, int bet);
+    Mono<GameDTO> play(String id, Move move, int bet);
     Mono<Void> deleteGame(String id);
 }

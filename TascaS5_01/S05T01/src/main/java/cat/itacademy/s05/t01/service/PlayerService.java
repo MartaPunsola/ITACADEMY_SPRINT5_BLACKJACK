@@ -11,7 +11,7 @@ public interface PlayerService {
     Mono<PlayerDTO> createPlayer(String playerName);
     Mono<Player> getPlayerById(Long id);
     Mono<PlayerDTO> getPlayerByName(String name);
-    Mono<List<Player>> getPlayersRanking();
+    Mono<List<PlayerDTO>> getPlayersRanking();
     Mono<PlayerDTO> addToBalance(Long playerId, int bet);
     Mono<PlayerDTO> subtractFromBalance(Long playerId, int bet);
     Mono<PlayerDTO> addPlayedGame(Long playerId);
