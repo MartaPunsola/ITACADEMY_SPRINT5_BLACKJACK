@@ -1,7 +1,6 @@
 package cat.itacademy.s05.t01.controller;
 
 import cat.itacademy.s05.t01.model.dto.PlayerDTO;
-import cat.itacademy.s05.t01.model.player.Player;
 import cat.itacademy.s05.t01.service.impl.PlayerServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,16 +31,12 @@ public class PlayerController {
             @ApiResponse(responseCode = "200", description = "Operation successful"),
             @ApiResponse(responseCode = "400", description = "There are no registered players",
                             content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = PlayerDTO.class))) //????
+                            schema = @Schema(implementation = PlayerDTO.class)))
     })
     @GetMapping("/ranking")
     public Mono<ResponseEntity<List<PlayerDTO>>> sortPlayers() {
         return playerService.getPlayersRanking()
                 .map(playerDTOs -> ResponseEntity.ok().body(playerDTOs));
-                        //.then(Mono.just(ResponseEntity.status(HttpStatus.OK)));
-               // Mono.just(ResponseEntity.status(HttpStatus.OK).body());
-
-        //millorar amb DTO
     }
 
     @Operation(
