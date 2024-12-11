@@ -4,11 +4,6 @@ services:
       context: .
       dockerfile: Dockerfile
     image: mpunsola/blackjack_api:latest
-    environment:
-      SPRING_DATASOURCE_URL: r2dbc:mysql://mysql:3306/blackjack_players
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: "PegasusSplit*14"
-      SPRING_DATA_MONGODB_URI: mongodb://root:secret@mongodb:27017/blackjack_games
     ports:
       - '8080:8080'
     depends_on:
@@ -24,30 +19,27 @@ services:
     container_name: mongodb
     environment:
       MONGO_INITDB_DATABASE: blackjack_games
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: "secret123"
     volumes:
       - mongo_data:/data/db
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "mongo", "--eval", "db.runCommand({ ping: 1 })" ]
-      interval: 10s
+      test: echo 'db.runCommand("ping").ok' | mongosh
       timeout: 5s
-      retries: 5
+      retries: 10
 
   mysql:
     image: 'mysql:8.0'
     container_name: mysql
     environment:
       MYSQL_DATABASE: blackjack_players
-      MYSQL_ROOT_PASSWORD: "verysecret"
+      MYSQL_ROOT_PASSWORD: 1234
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pverysecret" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p1234" ]
       interval: 10s
       timeout: 5s
       retries: 5
